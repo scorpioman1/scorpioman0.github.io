@@ -1,189 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <!-- <meta http-equiv="refresh" content="5;url=./public/exchange.html" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>十七</title>
-    <link rel="stylesheet" href="css/style.css">
-    <style type="text/css">
-        * {
-            padding: 0;
-            margin: 0;
-        }
-        
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-        }
-        
-        #upupoo_bottomLayer,
-        #upupoo_imageLayer,
-        #upupoo_exhibitionLayer,
-        #upupoo_exhibitionLayer_two {
-            width: 100%;
-            height: 100%;
-        }
-        
-        #upupoo_bottomLayer {
-            position: relative;
-            z-index: 1;
-        }
-        
-        #upupoo_imageLayer {
-            position: absolute;
-            z-index: 10;
-        }
-        
-        #upupoo_imageLayer>#upupoo_imageLayerImg {
-            width: 100%;
-            height: 100%;
-            display: block;
-            position: absolute;
-            z-index: 11;
-        }
-        
-        #upupoo_exhibitionLayer {
-            position: absolute;
-            z-index: 100;
-        }
-        
-        #upupoo_exhibitionLayer_two {
-            position: absolute;
-            z-index: 101;
-        }
-        
-        h1 {
-            position: absolute;
-            top: 92%;
-            left: 34%;
-        }
-    </style>
-
 </head>
+<style>
+    html,
+    body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .dynasty {
+        width: 100%;
+        height: 100%;
+        background: url('bg.png');
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+    }
+    
+    .masthead {
+        background: url('bg.png') no-repeat center/cover;
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+</style>
 
-<body onselectstart="return false">
-    <div id="upupoo_bottomLayer">
-        <div id="upupoo_imageLayer">
-            <img src="" id="upupoo_imageLayerImg" alt="" />
-            <div id="upupoo_exhibitionLayer">
-                <h1>宿醉眠城，梦尚醒。锦绣长安，夜未央。</h1>
-            </div>
-            <div id="upupoo_exhibitionLayer_two">
-                <div class="lhy_bgcontainer"></div>
-            </div>
-        </div>
+<body>
+    <!-- <div class="dynasty">
+        <img src="./image/flo_1.png" alt="">
+    </div> -->
+    <div class="masthead">
+           <div id="canvas"> <embed src="雪花.svg" type="image/svg+xml" />
+           </div>
+                   <canvas ></canvas>
     </div>
-    <script src="upupooConfig.json" type="text/javascript" charset="utf-8"></script>
-    <script src="js/jquery.min.js"></script>
-    <script src="js/snow.js"></script>
-    <script type="text/javascript">
-        var upupoo_imageLayerImg = document.getElementById('upupoo_imageLayerImg');
-        upupoo_imageLayerImg.src = upupooConfig.bgImg;
-        //配置
+    <script>
         (function() {
-            var container = document.querySelector(".lhy_bgcontainer");
-            if (/MSIE 6|MSIE 7|MSIE 8/.test(navigator.userAgent)) {
-                return;
-            } else {
-                if (/MSIE 9|MSIE 10/.test(navigator.userAgent)) {
-                    $(container).css("height", $(window).height()).bind("click", function() {
-                        $(this).remove()
-                    })
-                }
+            var COUNT = 600;
+            var masthead = document.querySelector('.masthead');
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            var width = masthead.clientWidth;
+            var height = masthead.clientHeight;
+            var i = 0;
+            var active = false;
+
+            function onResize() {
+                width = masthead.clientWidth;
+                height = masthead.clientHeight;
+                canvas.width = width;
+                canvas.height = height;
+                ctx.fillStyle = '#FFF';
+                var wasActive = active;
+                active = width > 600;
+                if (!wasActive && active)
+                    requestAnimFrame(update);
             }
-            var containerWidth = $(container).width();
-            var containerHeight = $(container).height();
-            var particle;
-            var camera;
-            var scene;
-            var renderer;
-            var mouseX = 0;
-            var mouseY = 0;
-            var windowHalfX = window.innerWidth / 2;
-            var windowHalfY = window.innerHeight / 2;
-            var particles = [];
-            var particleImage = new Image();
-            particleImage.src = "image/white_snow.png";
-            var snowNum = 30 * upupooConfig.density.value + 10;
-            //													
-            function init() {
-                camera = new THREE.PerspectiveCamera(upupooConfig.size.value * 1 + 20, containerWidth / containerHeight, 1, 10000);
-                camera.position.z = 1000;
-                scene = new THREE.Scene();
-                scene.add(camera);
-                renderer = new THREE.CanvasRenderer();
-                renderer.setSize(containerWidth, containerHeight);
-                var material = new THREE.ParticleBasicMaterial({
-                    map: new THREE.Texture(particleImage)
-                });
-                for (var i = 0; i < snowNum; i++) {
-                    particle = new Particle3D(material);
-                    particle.position.x = Math.random() * 2000 - 1000;
-                    particle.position.y = Math.random() * 2000 - 1000;
-                    particle.position.z = Math.random() * 2000 - 1000;
-                    particle.scale.x = particle.scale.y = 1;
-                    scene.add(particle);
-                    particles.push(particle)
-                }
-                container.appendChild(renderer.domElement);
-                document.addEventListener("mousemove", onDocumentMouseMove, false);
-                setInterval(loop, 33 - upupooConfig.speed.value * 0.33 + 1)
+            var Snowflake = function() {
+                this.x = 0;
+                this.y = 0;
+                this.vy = 0;
+                this.vx = 0;
+                this.r = 0;
+                this.reset();
+            };
+            Snowflake.prototype.reset = function() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * -height;
+                this.vy = 1 + Math.random() * 3;
+                this.vx = 0.5 - Math.random();
+                this.r = 3 + Math.random() * 2;
+                this.o = 0.5 + Math.random() * 0.5;
+            };
+            canvas.style.position = 'absolute';
+            canvas.style.left = canvas.style.top = '0';
+            var snowflakes = [],
+                snowflake;
+            for (i = 0; i < COUNT; i++) {
+                snowflake = new Snowflake();
+                snowflakes.push(snowflake);
             }
 
-            function onDocumentMouseMove(event) {
-                mouseX = event.clientX - windowHalfX;
-                mouseY = event.clientY - windowHalfY
-            }
-
-            function onDocumentTouchStart(event) {
-                if (event.touches.length == 1) {
-                    event.preventDefault();
-                    mouseX = event.touches[0].pageX - windowHalfX;
-                    mouseY = event.touches[0].pageY - windowHalfY
-                }
-            }
-
-            function onDocumentTouchMove(event) {
-                if (event.touches.length == 1) {
-                    event.preventDefault();
-                    mouseX = event.touches[0].pageX - windowHalfX;
-                    mouseY = event.touches[0].pageY - windowHalfY
-                }
-            }
-
-            function loop() {
-                for (var i = 0; i < particles.length; i++) {
-                    var particle = particles[i];
-                    particle.updatePhysics();
-                    with(particle.position) {
-                        if (y < -1000) {
-                            y += 2000
-                        }
-                        if (x > 1000) {
-                            x -= 2000
-                        } else {
-                            if (x < -1000) {
-                                x += 2000
-                            }
-                        }
-                        if (z > 1000) {
-                            z -= 2000
-                        } else {
-                            if (z < -1000) {
-                                z += 2000
-                            }
-                        }
+            function update() {
+                ctx.clearRect(0, 0, width, height);
+                if (!active)
+                    return;
+                for (i = 0; i < COUNT; i++) {
+                    snowflake = snowflakes[i];
+                    snowflake.y += snowflake.vy;
+                    snowflake.x += snowflake.vx;
+                    ctx.globalAlpha = snowflake.o;
+                    ctx.beginPath();
+                    ctx.arc(snowflake.x, snowflake.y, snowflake.r, 0, Math.PI * 2, false);
+                    ctx.closePath();
+                    ctx.fill();
+                    if (snowflake.y > height) {
+                        snowflake.reset();
                     }
                 }
-                camera.position.x += (mouseX - camera.position.x) * 0.005;
-                camera.position.y += (-mouseY - camera.position.y) * 0.005;
-                camera.lookAt(scene.position);
-                renderer.render(scene, camera)
+                requestAnimFrame(update);
             }
-            init()
-        }())
+            // shim layer with setTimeout fallback
+            window.requestAnimFrame = (function() {
+                return window.requestAnimationFrame ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame ||
+                    function(callback) {
+                        window.setTimeout(callback, 1000 / 60);
+                    };
+            })();
+            onResize();
+            window.addEventListener('resize', onResize, false);
+            masthead.appendChild(canvas);
+        })();
     </script>
 </body>
 
